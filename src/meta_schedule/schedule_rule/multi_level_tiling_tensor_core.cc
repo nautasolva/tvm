@@ -565,8 +565,9 @@ std::vector<State> MultiLevelTilingTensorCoreNode::AddWriteReuseTensorCore(
     auto fused = sch->Fuse({i0, j0});
     sch->Bind(fused, "threadIdx.y");
   }
-
-  sch->ReverseComputeInline(state->tensor_core_reindex_store);
+  if (sch->HasBlock(state->tensor_core_reindex_store)) {
+    sch->ReverseComputeInline(state->tensor_core_reindex_store);
+  }
   auto loops = sch->GetLoops(cache_write);
   auto blockized_store = sch->Blockize(loops[loops.size() - 2]);
   sch->Annotate(blockized_store, tir::attr::meta_schedule_auto_tensorize,
